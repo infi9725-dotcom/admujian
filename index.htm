@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrasi Ujian Siswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Menggunakan Lucide Core untuk HTML murni -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Styling Sidebar Biru */
+        .sidebar-bg {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+        }
+
+        .sidebar-active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white !important;
+            border-left: 4px solid #facc15; /* Aksen kuning untuk menandai posisi aktif */
+        }
+
+        .nav-button {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Glassmorphism effect for Login Card */
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hidden-auth {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Screen Login -->
+    <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-blue-700 via-blue-600 to-slate-100 p-4">
+        <div class="login-card w-full max-w-md p-8 rounded-3xl shadow-2xl space-y-8">
+            <div class="text-center space-y-2">
+                <!-- Tampilan Logo sekolah -->
+                <div class="flex justify-center mb-6">
+                    <img src="https://iili.io/qfj95sS.th.png" alt="Logo SDN 22 TK" class="w-32 h-auto object-contain">
+                </div>
+                
+                <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">SDN 22 TK</h1>
+                <p class="text-slate-500 font-medium tracking-wide">Sistem Administrasi Ujian</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 ml-1">Username</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        <input type="text" id="username" required 
+                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium" 
+                            placeholder="Masukkan Username">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 ml-1">Kata Sandi</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        <input type="password" id="password" required 
+                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium" 
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div id="loginError" class="hidden text-center bg-red-50 text-red-600 py-3 rounded-xl text-sm font-semibold border border-red-100">
+                    Username atau Sandi salah!
+                </div>
+
+                <button type="submit" 
+                    class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    Masuk Sekarang
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </form>
+
+            <div class="text-center">
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Akses Terbatas Staf Sekolah</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Layout (Hidden until Login) -->
+    <div id="appLayout" class="hidden-auth flex min-h-screen">
+        <!-- Sidebar Biru -->
+        <aside id="sidebar" class="w-64 sidebar-bg text-white shadow-2xl z-50">
+            <div class="p-6 flex items-center justify-between border-b border-white/10">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="shield-check" class="text-yellow-400"></i> SDN 22 TK
+                </h1>
+            </div>
+            <nav class="mt-6 space-y-2 px-3">
+                <button onclick="showSection('beranda')" id="btn-beranda" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl nav-button sidebar-active">
+                    <i data-lucide="home" class="w-5 h-5"></i> Beranda
+                </button>
+                <button onclick="showSection('kop')" id="btn-kop" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl nav-button">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Pengaturan KOP
+                </button>
+                <button onclick="showSection('penanggungjawab')" id="btn-penanggungjawab" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl nav-button">
+                    <i data-lucide="user-check" class="w-5 h-5"></i> Kepala Sekolah
+                </button>
+                <button onclick="showSection('datasiswa')" id="btn-datasiswa" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl nav-button">
+                    <i data-lucide="users" class="w-5 h-5"></i> Data Peserta
+                </button>
+                
+                <div class="pt-10 px-4">
+                    <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-red-500 text-white rounded-xl font-bold transition-all border border-white/10">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Konten Utama -->
+        <main id="mainContent" class="flex-1 p-8 overflow-y-auto h-screen">
+            <!-- Beranda -->
+            <section id="section-beranda" class="space-y-6">
+                <div class="bg-blue-600 rounded-2xl p-8 text-white shadow-lg shadow-blue-200">
+                    <h2 class="text-3xl font-bold mb-2">Administrasi Ujian</h2>
+                    <p class="text-blue-100">Selamat datang di sistem manajemen kartu ujian SDN 22 TK.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg" id="stat-siswa">0 Siswa</h3>
+                        <p class="text-slate-500 text-sm">Total Data Siswa</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <div class="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                            <i data-lucide="building"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg" id="stat-sekolah">-</h3>
+                        <p class="text-slate-500 text-sm">Satuan Pendidikan</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <div class="bg-orange-100 text-orange-600 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                            <i data-lucide="user-check"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg" id="stat-kepsek">-</h3>
+                        <p class="text-slate-500 text-sm">Kepala Sekolah</p>
+                    </div>
+                </div>
+                
+                <div class="mt-12 bg-white p-6 rounded-xl border border-red-100">
+                    <h3 class="text-red-600 font-bold mb-2">Zona Bahaya</h3>
+                    <p class="text-slate-500 text-sm mb-4">Menghapus semua data yang tersimpan secara permanen dari browser ini.</p>
+                    <button onclick="resetAllData()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium">Hapus Semua Data Aplikasi</button>
+                </div>
+            </section>
+
+            <!-- KOP Surat Section -->
+            <section id="section-kop" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Pengaturan KOP Surat</h2>
+                    <form id="formKop" class="grid grid-cols-1 md:grid-cols-2 gap-4" onsubmit="event.preventDefault()">
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Logo Kiri (URL)</label><input type="text" id="kopLogoKiri" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Logo Kanan (URL)</label><input type="text" id="kopLogoKanan" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-2"><label class="block text-sm font-medium text-slate-700">Pemerintah Daerah</label><input type="text" id="kopPemda" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Dinas Pendidikan</label><input type="text" id="kopDinas" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Satuan Pendidikan</label><input type="text" id="kopSekolah" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Kecamatan</label><input type="text" id="kopKec" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Alamat</label><input type="text" id="kopAlamat" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Email</label><input type="email" id="kopEmail" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Website</label><input type="text" id="kopWeb" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                    </form>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="saveKop()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg">Simpan Pengaturan</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Penanggung Jawab Section -->
+            <section id="section-penanggungjawab" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Data Kepala Sekolah</h2>
+                    <form id="formKepsek" class="grid grid-cols-1 md:grid-cols-2 gap-4" onsubmit="event.preventDefault()">
+                        <div class="col-span-2"><label class="block text-sm font-medium text-slate-700">Nama Kepala Sekolah</label><input type="text" id="kepsekNama" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">NIP</label><input type="text" id="kepsekNip" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Tempat</label><input type="text" id="kepsekTempat" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">Tanggal</label><input type="text" id="kepsekTanggal" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                        <div class="col-span-1"><label class="block text-sm font-medium text-slate-700">URL Tanda Tangan (PNG)</label><input type="text" id="kepsekTtd" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 shadow-sm outline-none"></div>
+                    </form>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="saveKepsek()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg">Simpan Data</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Siswa Section -->
+            <section id="section-datasiswa" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">Daftar Peserta Ujian</h2>
+                            <p class="text-sm text-slate-500">Kelola informasi siswa peserta ujian di sini.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="printToNewTab()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Cetak Terfilter (F4)
+                            </button>
+                            <button onclick="toggleModalSiswa(true)" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Peserta
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="bg-slate-50 p-4 rounded-xl mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 border border-slate-100">
+                        <div class="relative">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="filterNama" oninput="renderSiswaTable()" class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cari Nama...">
+                        </div>
+                        <div>
+                            <select id="filterKelas" onchange="renderSiswaTable()" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">Semua Kelas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filterTahun" onchange="renderSiswaTable()" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">Semua Tahun Pelajaran</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button onclick="resetFilters()" class="w-full px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors">Reset Filter</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-slate-100">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50 font-bold">
+                                <tr>
+                                    <th class="px-6 py-4">Nama Siswa</th>
+                                    <th class="px-6 py-4">Nama Ujian</th>
+                                    <th class="px-6 py-4">NISN/NIS</th>
+                                    <th class="px-6 py-4">Kelas</th>
+                                    <th class="px-6 py-4 text-center">Tahun Pelajaran</th>
+                                    <th class="px-6 py-4">No Ujian</th>
+                                    <th class="px-6 py-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="siswaTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Form Siswa -->
+    <div id="modalSiswa" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden modal-enter">
+            <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="users" class="w-6 h-6 text-white"></i></div>
+                    <div>
+                        <h3 class="text-lg font-bold" id="modalTitle">Tambah Data Siswa</h3>
+                        <p class="text-blue-100 text-xs">Lengkapi informasi peserta ujian di bawah ini.</p>
+                    </div>
+                </div>
+                <button onclick="toggleModalSiswa(false)" class="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="formSiswaModal" class="p-6 space-y-4" onsubmit="event.preventDefault()">
+                <div class="space-y-1">
+                    <label class="block text-sm font-semibold text-slate-700">Nama Lengkap Siswa</label>
+                    <input type="text" id="sNama" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase font-bold" placeholder="Contoh: BUDI SANTOSO">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-sm font-semibold text-slate-700">Nama Ujian (Judul Kartu)</label>
+                    <input type="text" id="sUjian" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Contoh: KARTU PESERTA UJIAN UTS">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-semibold text-slate-700">NISN / NIS</label>
+                        <input type="text" id="sNisn" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="123456789">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-semibold text-slate-700">Kelas</label>
+                        <input type="text" id="sKelas" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VI-A">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-semibold text-slate-700">Tahun Pelajaran</label>
+                        <input type="text" id="sTahun" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="2025/2026">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-semibold text-slate-700">Nomor Ujian</label>
+                        <input type="text" id="sNo" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold" placeholder="01-001-001">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="toggleModalSiswa(false)" class="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">Batal</button>
+                    <button type="button" onclick="addSiswa()" id="btnSimpanSiswa" class="flex-1 px-4 py-3 bg-blue-600 rounded-xl text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            kop: {
+                logoKiri: '', logoKanan: '', pemda: '', dinas: '', sekolah: '',
+                kecamatan: '', alamat: '', email: '', web: ''
+            },
+            kepsek: { nama: '', nip: '', tempat: '', tanggal: '', ttd: '' },
+            siswa: []
+        };
+
+        let editingSiswaId = null;
+
+        // Login System Logic
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorBox = document.getElementById('loginError');
+
+            if (user === "SDN22TK" && pass === "12345") {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('appLayout').classList.remove('hidden-auth');
+                errorBox.classList.add('hidden');
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else {
+                errorBox.classList.remove('hidden');
+                const card = document.querySelector('.login-card');
+                card.classList.add('animate-bounce');
+                setTimeout(() => card.classList.remove('animate-bounce'), 500);
+            }
+        }
+
+        function handleLogout() {
+            if (confirm("Anda yakin ingin keluar?")) {
+                sessionStorage.removeItem('isLoggedIn');
+                location.reload();
+            }
+        }
+
+        function checkAuthOnLoad() {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('appLayout').classList.remove('hidden-auth');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('admin_ujian_data_v3', JSON.stringify(state));
+        }
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('admin_ujian_data_v3');
+                if (saved) {
+                    state = JSON.parse(saved);
+                    syncFormsWithState();
+                    updateFilterOptions();
+                    renderSiswaTable();
+                    updateStats();
+                }
+            } catch (e) {
+                console.error("Gagal memuat data dari localStorage", e);
+            }
+        }
+
+        function resetAllData() {
+            if (confirm("Hapus semua data secara permanen?")) {
+                localStorage.removeItem('admin_ujian_data_v3');
+                location.reload();
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('aside nav button').forEach(b => b.classList.remove('sidebar-active'));
+            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+            document.getElementById(`btn-${sectionId}`).classList.add('sidebar-active');
+        }
+
+        function toggleModalSiswa(show, id = null) {
+            const modal = document.getElementById('modalSiswa');
+            const title = document.getElementById('modalTitle');
+            const btn = document.getElementById('btnSimpanSiswa');
+            
+            if(show) {
+                editingSiswaId = id;
+                if(id) {
+                    const s = state.siswa.find(item => item.id === id);
+                    if(s) {
+                        document.getElementById('sNama').value = s.nama;
+                        document.getElementById('sUjian').value = s.namaUjian || '';
+                        document.getElementById('sNisn').value = s.nisn;
+                        document.getElementById('sKelas').value = s.kelas;
+                        document.getElementById('sTahun').value = s.tahun;
+                        document.getElementById('sNo').value = s.no;
+                        title.innerText = "Edit Data Siswa";
+                        btn.innerText = "Simpan Perubahan";
+                    }
+                } else {
+                    document.getElementById('formSiswaModal').reset();
+                    document.getElementById('sUjian').value = "KARTU PESERTA UJIAN UTS";
+                    title.innerText = "Tambah Data Siswa";
+                    btn.innerText = "Simpan Data";
+                }
+                modal.classList.remove('hidden');
+                document.getElementById('sNama').focus();
+            } else {
+                modal.classList.add('hidden');
+                editingSiswaId = null;
+            }
+        }
+
+        // Helper untuk mendapatkan data terfilter
+        function getFilteredSiswa() {
+            const search = document.getElementById('filterNama').value.toLowerCase();
+            const fKelas = document.getElementById('filterKelas').value;
+            const fTahun = document.getElementById('filterTahun').value;
+
+            return state.siswa.filter(s => {
+                const matchNama = s.nama.toLowerCase().includes(search);
+                const matchKelas = fKelas === '' || s.kelas === fKelas;
+                const matchTahun = fTahun === '' || s.tahun === fTahun;
+                return matchNama && matchKelas && matchTahun;
+            });
+        }
+
+        function updateFilterOptions() {
+            const selectKelas = document.getElementById('filterKelas');
+            const selectTahun = document.getElementById('filterTahun');
+            if(!selectKelas || !selectTahun) return;
+            
+            const uniqueKelas = [...new Set(state.siswa.map(s => s.kelas))].filter(Boolean).sort();
+            const uniqueTahun = [...new Set(state.siswa.map(s => s.tahun))].filter(Boolean).sort();
+            
+            selectKelas.innerHTML = '<option value="">Semua Kelas</option>' + 
+                uniqueKelas.map(k => `<option value="${k}">${k}</option>`).join('');
+            
+            selectTahun.innerHTML = '<option value="">Semua Tahun Pelajaran</option>' + 
+                uniqueTahun.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function resetFilters() {
+            document.getElementById('filterNama').value = '';
+            document.getElementById('filterKelas').value = '';
+            document.getElementById('filterTahun').value = '';
+            renderSiswaTable();
+        }
+
+        function saveKop() {
+            state.kop = {
+                logoKiri: document.getElementById('kopLogoKiri').value,
+                logoKanan: document.getElementById('kopLogoKanan').value,
+                pemda: document.getElementById('kopPemda').value,
+                dinas: document.getElementById('kopDinas').value,
+                sekolah: document.getElementById('kopSekolah').value,
+                kecamatan: document.getElementById('kopKec').value,
+                alamat: document.getElementById('kopAlamat').value,
+                email: document.getElementById('kopEmail').value,
+                web: document.getElementById('kopWeb').value
+            };
+            saveData();
+            updateStats();
+            alert("Pengaturan KOP disimpan!");
+        }
+
+        function saveKepsek() {
+            state.kepsek = {
+                nama: document.getElementById('kepsekNama').value,
+                nip: document.getElementById('kepsekNip').value,
+                tempat: document.getElementById('kepsekTempat').value,
+                tanggal: document.getElementById('kepsekTanggal').value,
+                ttd: document.getElementById('kepsekTtd').value
+            };
+            saveData();
+            updateStats();
+            alert("Data Kepala Sekolah disimpan!");
+        }
+
+        function addSiswa() {
+            const nama = document.getElementById('sNama').value.trim();
+            const namaUjian = document.getElementById('sUjian').value.trim();
+            const nisn = document.getElementById('sNisn').value.trim();
+            const kelas = document.getElementById('sKelas').value.trim();
+            const tahun = document.getElementById('sTahun').value.trim();
+            const no = document.getElementById('sNo').value.trim();
+            
+            if(!nama || !no) return alert("Nama dan Nomor Ujian wajib diisi!");
+            
+            if (editingSiswaId) {
+                state.siswa = state.siswa.map(s => 
+                    s.id === editingSiswaId ? { ...s, nama, namaUjian, nisn, kelas, tahun, no } : s
+                );
+            } else {
+                state.siswa.push({ id: Date.now(), nama, namaUjian, nisn, kelas, tahun, no });
+            }
+            
+            saveData();
+            updateFilterOptions();
+            renderSiswaTable();
+            updateStats();
+            toggleModalSiswa(false);
+        }
+
+        function removeSiswa(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus peserta ini?")) {
+                state.siswa = state.siswa.filter(s => s.id !== id);
+                saveData();
+                updateFilterOptions();
+                renderSiswaTable();
+                updateStats();
+            }
+        }
+
+        function renderSiswaTable() {
+            const tbody = document.getElementById('siswaTableBody');
+            if(!tbody) return;
+
+            const filtered = getFilteredSiswa();
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-400 italic font-bold">Data tidak ditemukan.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(s => `
+                <tr class="border-b border-slate-50 bg-white hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900 uppercase tracking-tight">${s.nama}</td>
+                    <td class="px-6 py-4 text-xs italic text-slate-500">${s.namaUjian || '-'}</td>
+                    <td class="px-6 py-4 font-medium">${s.nisn}</td>
+                    <td class="px-6 py-4 font-bold text-slate-700">${s.kelas}</td>
+                    <td class="px-6 py-4 text-center text-slate-500 font-medium">${s.tahun || '-'}</td>
+                    <td class="px-6 py-4 font-bold text-blue-700 font-mono">${s.no}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="toggleModalSiswa(true, ${s.id})" class="flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold shadow-sm border border-blue-100" title="Edit">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                <span>Edit</span>
+                            </button>
+                            <button onclick="removeSiswa(${s.id})" class="flex items-center gap-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold shadow-sm border border-red-100" title="Hapus">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-siswa').innerText = state.siswa.length + " Siswa";
+            document.getElementById('stat-sekolah').innerText = (state.kop.sekolah || '-').toUpperCase();
+            document.getElementById('stat-kepsek').innerText = (state.kepsek.nama || '-').toUpperCase();
+        }
+
+        function syncFormsWithState() {
+            Object.keys(state.kop).forEach(key => {
+                const id = 'kop' + key.charAt(0).toUpperCase() + key.slice(1);
+                const el = document.getElementById(id);
+                if(el) el.value = state.kop[key];
+            });
+            Object.keys(state.kepsek).forEach(key => {
+                const id = 'kepsek' + key.charAt(0).toUpperCase() + key.slice(1);
+                const el = document.getElementById(id);
+                if(el) el.value = state.kepsek[key];
+            });
+        }
+
+        // FUNGSI UTAMA UNTUK MENDAPATKAN KARTU (UKURAN 80mm UNTUK MUAT 8 KARTU PADA F4)
+        function getCardHTML(s) {
+            const qrId = "qrcode-" + s.id;
+            return `
+                <div style="border: 1.5pt solid #1e40af; padding: 8px; height: 80mm; width: 100mm; position: relative; background: white; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif;">
+                    
+                    <!-- WATERMARK LOGO -->
+                    <div style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; z-index: 0; pointer-events: none;">
+                        <img src="https://iili.io/qfjo0Mu.th.png" style="width: 65mm; height: auto;">
+                    </div>
+
+                    <div style="position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;">
+                        <table style="width: 100%; border-bottom: 1.5pt solid black; margin-bottom: 4px; padding-bottom: 2px;">
+                            <tr>
+                                <td width="48" align="center"><img src="${state.kop.logoKiri}" width="42" onerror="this.style.display='none'"></td>
+                                <td align="center">
+                                    <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">${state.kop.pemda}</div>
+                                    <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">${state.kop.dinas}</div>
+                                    <div style="font-size: 11px; font-weight: 900; color: #1e40af; line-height: 1.1; margin: 1px 0;">${state.kop.sekolah || 'UPT SDN 22 TANAH KERAS'}</div>
+                                    <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">KECAMATAN ${state.kop.kecamatan || 'BAYANG'}</div>
+                                    <div style="font-size: 5px; line-height: 1.1;">${state.kop.alamat}</div>
+                                    <div style="font-size: 4px; line-height: 1.1; font-weight: 500;">Email: ${state.kop.email} | Web: ${state.kop.web}</div>
+                                </td>
+                                <td width="48" align="center"><img src="${state.kop.logoKanan}" width="42" onerror="this.style.display='none'"></td>
+                            </tr>
+                        </table>
+                        <div style="text-align: center; font-weight: 900; font-size: 10px; margin-top: 1px; text-decoration: underline;">${s.namaUjian || 'KARTU PESERTA UJIAN'}</div>
+                        <div style="text-align: center; font-weight: 700; font-size: 7px; margin-top: 1px; color: #334155; margin-bottom: 6px;">TAHUN PELAJARAN ${s.tahun || '-'}</div>
+                        <div style="font-size: 10px; flex-grow: 1;">
+                            <table width="100%" cellpadding="2" style="border-collapse: collapse;">
+                                <tr><td width="30%">NAMA</td><td width="5%">:</td><td style="font-weight:900; border-bottom: 0.8pt solid #e2e8f0; text-transform: uppercase;">${s.nama}</td></tr>
+                                <tr><td>NISN/NIS</td><td>:</td><td style="border-bottom: 0.8pt solid #e2e8f0;">${s.nisn}</td></tr>
+                                <tr><td>KELAS</td><td>:</td><td style="border-bottom: 0.8pt solid #e2e8f0;">${s.kelas}</td></tr>
+                                <tr><td style="padding-top:6px;">NO UJIAN</td><td>:</td><td style="padding-top:6px;"><span style="font-size: 12px; font-weight: 900; background: #f1f5f9; padding: 1px 6px; border-radius: 3px; border: 1.2pt solid #1e40af; color: #1e40af; display: inline-block; font-family: monospace;">${s.no}</span></td></tr>
+                            </table>
+                        </div>
+                        <div style="display: flex; justify-content: flex-start; align-items: flex-end; margin-top: auto; padding-bottom: 2px;">
+                            <div style="width: 30%; display: flex; flex-direction: column; align-items: center;">
+                                <div id="${qrId}"></div>
+                                <div style="font-size: 5px; margin-top: 3px; font-weight: bold; color: #64748b;">VERIFIKASI QR</div>
+                            </div>
+                            <div style="flex-grow: 1;"></div>
+                            <div style="font-size: 8px; text-align: left; width: 145px; border-top: 1px solid #f1f5f9; padding-top: 3px;">
+                                <div style="line-height: 1.1;">${state.kepsek.tempat}, ${state.kepsek.tanggal}</div>
+                                <div style="line-height: 1.1; font-weight: bold;">Kepala Sekolah,</div>
+                                <div style="height: 32px; position: relative; margin: 1px 0; display: flex; align-items: center; justify-content: center;">
+                                    ${state.kepsek.ttd ? `<img src="${state.kepsek.ttd}" style="height: 38px; position: absolute; z-index: 10; object-fit: contain;">` : ''}
+                                    <div style="width: 80%; height: 15px;"></div>
+                                </div>
+                                <div style="font-weight: 900; text-decoration: underline; font-size: 9px; line-height: 1.1;">${state.kepsek.nama}</div>
+                                <div style="font-size: 8px; line-height: 1.1;">NIP. ${state.kepsek.nip}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function printToNewTab() {
+            // PERBAIKAN: Gunakan data terfilter saja untuk pencetakan
+            const filteredData = getFilteredSiswa();
+            
+            if(filteredData.length === 0) return alert("Data hasil filter kosong!");
+            
+            const newWindow = window.open('', '_blank');
+            if (!newWindow) return alert("Pop-up diblokir! Izinkan pop-up untuk mencetak.");
+
+            const chunks = [];
+            // PERBAIKAN: F4 (215x330mm) muat 8 kartu (2 kolom x 4 baris) dengan ukuran kartu 100x80mm
+            for (let i = 0; i < filteredData.length; i += 8) {
+                chunks.push(filteredData.slice(i, i + 8));
+            }
+
+            let pagesHTML = '';
+            chunks.forEach((chunk) => {
+                let cardsHTML = '';
+                chunk.forEach(s => { cardsHTML += getCardHTML(s); });
+                
+                // Gunakan Grid untuk layout presisi 2x4 pada kertas F4
+                pagesHTML += `<div style="display: grid; grid-template-columns: 100mm 100mm; grid-template-rows: repeat(4, 80mm); gap: 4mm; width: 215mm; height: 330mm; margin: 0 auto; page-break-after: always; padding: 5mm 5mm; box-sizing: border-box; align-content: start;">${cardsHTML}</div>`;
+            });
+
+            newWindow.document.write('<!DOCTYPE html><html><head><title>Cetak Kartu Ujian (8 Kartu Per Lembar)</title>');
+            newWindow.document.write('<style>body{margin:0;padding:0;background:#f3f4f6;}@media print{body{background:none;}@page{size:215mm 330mm;margin:0;}}</style></head><body>');
+            newWindow.document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+            newWindow.document.write('<div id="printContent">' + pagesHTML + '</div>');
+            newWindow.document.write('<script>const students = ' + JSON.stringify(filteredData) + ';window.onload=function(){students.forEach(s=>{const el=document.getElementById("qrcode-"+s.id);if(el){new QRCode(el,{text:"SDN22TK\\nPESERTA:"+s.nama+"\\nNO:"+s.no,width:55,height:55,correctLevel:QRCode.CorrectLevel.H});}});setTimeout(()=>{window.print();},1200);};<\/script></body></html>');
+            newWindow.document.close();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            checkAuthOnLoad();
+            loadData();
+        });
+    </script>
+</body>
+</html>
