@@ -105,7 +105,7 @@
             </form>
 
             <div class="text-center">
-                <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Fauzi, S.Hum</p>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Akses Terbatas Staf Sekolah</p>
             </div>
         </div>
     </div>
@@ -606,15 +606,15 @@
             });
         }
 
-        // FUNGSI UTAMA UNTUK MENDAPATKAN KARTU (UKURAN 77mm UNTUK MENGHINDARI TERPOTONG PADA F4)
+        // FUNGSI UTAMA UNTUK MENDAPATKAN KARTU (UKURAN 75mm UNTUK MENGHINDARI TERPOTONG PADA F4)
         function getCardHTML(s) {
             const qrId = "qrcode-" + s.id;
             return `
-                <div style="border: 1.2pt solid #1e40af; padding: 7px; height: 77mm; width: 98mm; position: relative; background: white; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif; margin: 0 auto;">
+                <div style="border: 1.2pt solid #1e40af; padding: 7px; height: 75mm; width: 98mm; position: relative; background: white; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif; margin: 0 auto;">
                     
                     <!-- WATERMARK LOGO (Posisi Tengah & Ukuran Disesuaikan Agar Tidak Terpotong) -->
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; z-index: 0; pointer-events: none;">
-                        <img src="https://iili.io/qfjo0Mu.th.png" style="width: 50mm; height: auto;">
+                        <img src="https://iili.io/qfjo0Mu.th.png" style="width: 45mm; height: auto;">
                     </div>
 
                     <div style="position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;">
@@ -632,7 +632,7 @@
                                 <td width="48" align="center"><img src="${state.kop.logoKanan}" width="40" onerror="this.style.display='none'"></td>
                             </tr>
                         </table>
-                        <div style="text-align: center; font-weight: 900; font-size: 9px; margin-top: 1px; text-decoration: underline;">${s.namaUjian || 'KARTU PESERTA UJIAN'}</div>
+                        <div style="text-align: center; font-weight: 900; font-size: 9px; margin-top: 1px; text-decoration: underline;">${s.namaUjian || 'KARTU PESERTA UJIAN UTS'}</div>
                         <div style="text-align: center; font-weight: 700; font-size: 7px; margin-top: 1px; color: #334155; margin-bottom: 4px;">TAHUN PELAJARAN ${s.tahun || '-'}</div>
                         <div style="font-size: 9px; flex-grow: 1;">
                             <table width="100%" cellpadding="2" style="border-collapse: collapse;">
@@ -682,8 +682,9 @@
                 let cardsHTML = '';
                 chunk.forEach(s => { cardsHTML += getCardHTML(s); });
                 
-                // Gunakan Padding 10mm (Atas/Bawah) & 5mm (Kiri/Kanan) sebagai Safety Area agar tidak terpotong printer
-                pagesHTML += `<div style="display: grid; grid-template-columns: 98mm 98mm; grid-template-rows: repeat(4, 77mm); gap: 3mm; width: 215mm; height: 330mm; margin: 0 auto; page-break-after: always; padding: 10mm 5mm; box-sizing: border-box; align-content: start;">${cardsHTML}</div>`;
+                // Gunakan Tinggi 75mm, Gap 2mm, Padding 8mm (Total Tinggi 322mm, F4 adalah 330mm)
+                // Ini memberikan ruang napas agar tidak terpotong printer di bagian bawah.
+                pagesHTML += `<div style="display: grid; grid-template-columns: 98mm 98mm; grid-template-rows: repeat(4, 75mm); gap: 2mm; width: 215mm; height: 330mm; margin: 0 auto; page-break-after: always; padding: 8mm 5mm; box-sizing: border-box; align-content: start;">${cardsHTML}</div>`;
             });
 
             newWindow.document.write('<!DOCTYPE html><html><head><title>Cetak Kartu Ujian (8 Kartu Per Lembar)</title>');
