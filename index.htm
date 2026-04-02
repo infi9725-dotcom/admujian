@@ -69,7 +69,7 @@
                 </div>
                 
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">SDN 22 TK</h1>
-                <p class="text-slate-500 font-medium tracking-wide">Sistem Kartu Ujian</p>
+                <p class="text-slate-500 font-medium tracking-wide">Sistem Administrasi Ujian</p>
             </div>
 
             <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
@@ -99,13 +99,13 @@
 
                 <button type="submit" 
                     class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                    Masuk 
+                    Masuk Sekarang
                     <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
             </form>
 
             <div class="text-center">
-                <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">www.sdn22tk.my.id</p>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Akses Terbatas Staf Sekolah</p>
             </div>
         </div>
     </div>
@@ -174,7 +174,7 @@
                 </div>
                 
                 <div class="mt-12 bg-white p-6 rounded-xl border border-red-100">
-                    <h3 class="text-red-600 font-bold mb-2">Reset Data</h3>
+                    <h3 class="text-red-600 font-bold mb-2">Zona Bahaya</h3>
                     <p class="text-slate-500 text-sm mb-4">Menghapus semua data yang tersimpan secara permanen dari browser ini.</p>
                     <button onclick="resetAllData()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium">Hapus Semua Data Aplikasi</button>
                 </div>
@@ -228,7 +228,7 @@
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="printToNewTab()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg">
-                                <i data-lucide="printer" class="w-4 h-4"></i> Cetak
+                                <i data-lucide="printer" class="w-4 h-4"></i> Cetak Terfilter (F4)
                             </button>
                             <button onclick="toggleModalSiswa(true)" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg">
                                 <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Peserta
@@ -606,40 +606,40 @@
             });
         }
 
-        // FUNGSI UTAMA UNTUK MENDAPATKAN KARTU (UKURAN 80mm UNTUK MUAT 8 KARTU PADA F4)
+        // FUNGSI UTAMA UNTUK MENDAPATKAN KARTU (UKURAN 77mm UNTUK MENGHINDARI TERPOTONG PADA F4)
         function getCardHTML(s) {
             const qrId = "qrcode-" + s.id;
             return `
-                <div style="border: 1.5pt solid #1e40af; padding: 8px; height: 80mm; width: 100mm; position: relative; background: white; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif;">
+                <div style="border: 1.2pt solid #1e40af; padding: 7px; height: 77mm; width: 98mm; position: relative; background: white; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif; margin: 0 auto;">
                     
                     <!-- WATERMARK LOGO -->
                     <div style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; z-index: 0; pointer-events: none;">
-                        <img src="https://iili.io/qfjo0Mu.th.png" style="width: 65mm; height: auto;">
+                        <img src="https://iili.io/qfjo0Mu.th.png" style="width: 60mm; height: auto;">
                     </div>
 
                     <div style="position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;">
                         <table style="width: 100%; border-bottom: 1.5pt solid black; margin-bottom: 4px; padding-bottom: 2px;">
                             <tr>
-                                <td width="48" align="center"><img src="${state.kop.logoKiri}" width="42" onerror="this.style.display='none'"></td>
+                                <td width="48" align="center"><img src="${state.kop.logoKiri}" width="40" onerror="this.style.display='none'"></td>
                                 <td align="center">
                                     <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">${state.kop.pemda}</div>
                                     <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">${state.kop.dinas}</div>
-                                    <div style="font-size: 11px; font-weight: 900; color: #1e40af; line-height: 1.1; margin: 1px 0;">${state.kop.sekolah || 'UPT SDN 22 TANAH KERAS'}</div>
+                                    <div style="font-size: 10px; font-weight: 900; color: #1e40af; line-height: 1.1; margin: 1px 0;">${state.kop.sekolah || 'UPT SDN 22 TANAH KERAS'}</div>
                                     <div style="font-size: 6px; font-weight: bold; line-height: 1.1;">KECAMATAN ${state.kop.kecamatan || 'BAYANG'}</div>
                                     <div style="font-size: 5px; line-height: 1.1;">${state.kop.alamat}</div>
                                     <div style="font-size: 4px; line-height: 1.1; font-weight: 500;">Email: ${state.kop.email} | Web: ${state.kop.web}</div>
                                 </td>
-                                <td width="48" align="center"><img src="${state.kop.logoKanan}" width="42" onerror="this.style.display='none'"></td>
+                                <td width="48" align="center"><img src="${state.kop.logoKanan}" width="40" onerror="this.style.display='none'"></td>
                             </tr>
                         </table>
-                        <div style="text-align: center; font-weight: 900; font-size: 10px; margin-top: 1px; text-decoration: underline;">${s.namaUjian || 'KARTU PESERTA UJIAN'}</div>
-                        <div style="text-align: center; font-weight: 700; font-size: 7px; margin-top: 1px; color: #334155; margin-bottom: 6px;">TAHUN PELAJARAN ${s.tahun || '-'}</div>
-                        <div style="font-size: 10px; flex-grow: 1;">
+                        <div style="text-align: center; font-weight: 900; font-size: 9px; margin-top: 1px; text-decoration: underline;">${s.namaUjian || 'KARTU PESERTA UJIAN'}</div>
+                        <div style="text-align: center; font-weight: 700; font-size: 7px; margin-top: 1px; color: #334155; margin-bottom: 4px;">TAHUN PELAJARAN ${s.tahun || '-'}</div>
+                        <div style="font-size: 9px; flex-grow: 1;">
                             <table width="100%" cellpadding="2" style="border-collapse: collapse;">
                                 <tr><td width="30%">NAMA</td><td width="5%">:</td><td style="font-weight:900; border-bottom: 0.8pt solid #e2e8f0; text-transform: uppercase;">${s.nama}</td></tr>
                                 <tr><td>NISN/NIS</td><td>:</td><td style="border-bottom: 0.8pt solid #e2e8f0;">${s.nisn}</td></tr>
                                 <tr><td>KELAS</td><td>:</td><td style="border-bottom: 0.8pt solid #e2e8f0;">${s.kelas}</td></tr>
-                                <tr><td style="padding-top:6px;">NO UJIAN</td><td>:</td><td style="padding-top:6px;"><span style="font-size: 12px; font-weight: 900; background: #f1f5f9; padding: 1px 6px; border-radius: 3px; border: 1.2pt solid #1e40af; color: #1e40af; display: inline-block; font-family: monospace;">${s.no}</span></td></tr>
+                                <tr><td style="padding-top:5px;">NO UJIAN</td><td>:</td><td style="padding-top:5px;"><span style="font-size: 11px; font-weight: 900; background: #f1f5f9; padding: 1px 5px; border-radius: 3px; border: 1.2pt solid #1e40af; color: #1e40af; display: inline-block; font-family: monospace;">${s.no}</span></td></tr>
                             </table>
                         </div>
                         <div style="display: flex; justify-content: flex-start; align-items: flex-end; margin-top: auto; padding-bottom: 2px;">
@@ -648,12 +648,12 @@
                                 <div style="font-size: 5px; margin-top: 3px; font-weight: bold; color: #64748b;">VERIFIKASI QR</div>
                             </div>
                             <div style="flex-grow: 1;"></div>
-                            <div style="font-size: 8px; text-align: left; width: 145px; border-top: 1px solid #f1f5f9; padding-top: 3px;">
+                            <div style="font-size: 8px; text-align: left; width: 140px; border-top: 1px solid #f1f5f9; padding-top: 3px;">
                                 <div style="line-height: 1.1;">${state.kepsek.tempat}, ${state.kepsek.tanggal}</div>
                                 <div style="line-height: 1.1; font-weight: bold;">Kepala Sekolah,</div>
-                                <div style="height: 32px; position: relative; margin: 1px 0; display: flex; align-items: center; justify-content: center;">
-                                    ${state.kepsek.ttd ? `<img src="${state.kepsek.ttd}" style="height: 38px; position: absolute; z-index: 10; object-fit: contain;">` : ''}
-                                    <div style="width: 80%; height: 15px;"></div>
+                                <div style="height: 28px; position: relative; margin: 1px 0; display: flex; align-items: center; justify-content: center;">
+                                    ${state.kepsek.ttd ? `<img src="${state.kepsek.ttd}" style="height: 35px; position: absolute; z-index: 10; object-fit: contain;">` : ''}
+                                    <div style="width: 80%; height: 12px;"></div>
                                 </div>
                                 <div style="font-weight: 900; text-decoration: underline; font-size: 9px; line-height: 1.1;">${state.kepsek.nama}</div>
                                 <div style="font-size: 8px; line-height: 1.1;">NIP. ${state.kepsek.nip}</div>
@@ -664,7 +664,6 @@
         }
 
         function printToNewTab() {
-            // PERBAIKAN: Gunakan data terfilter saja untuk pencetakan
             const filteredData = getFilteredSiswa();
             
             if(filteredData.length === 0) return alert("Data hasil filter kosong!");
@@ -673,7 +672,7 @@
             if (!newWindow) return alert("Pop-up diblokir! Izinkan pop-up untuk mencetak.");
 
             const chunks = [];
-            // PERBAIKAN: F4 (215x330mm) muat 8 kartu (2 kolom x 4 baris) dengan ukuran kartu 100x80mm
+            // F4 (215x330mm) muat 8 kartu (2 kolom x 4 baris)
             for (let i = 0; i < filteredData.length; i += 8) {
                 chunks.push(filteredData.slice(i, i + 8));
             }
@@ -683,15 +682,15 @@
                 let cardsHTML = '';
                 chunk.forEach(s => { cardsHTML += getCardHTML(s); });
                 
-                // Gunakan Grid untuk layout presisi 2x4 pada kertas F4
-                pagesHTML += `<div style="display: grid; grid-template-columns: 100mm 100mm; grid-template-rows: repeat(4, 80mm); gap: 4mm; width: 215mm; height: 330mm; margin: 0 auto; page-break-after: always; padding: 5mm 5mm; box-sizing: border-box; align-content: start;">${cardsHTML}</div>`;
+                // Gunakan Padding 5mm sebagai Safety Area agar tidak terpotong printer
+                pagesHTML += `<div style="display: grid; grid-template-columns: 98mm 98mm; grid-template-rows: repeat(4, 77mm); gap: 3mm; width: 215mm; height: 330mm; margin: 0 auto; page-break-after: always; padding: 10mm 5mm; box-sizing: border-box; align-content: start;">${cardsHTML}</div>`;
             });
 
             newWindow.document.write('<!DOCTYPE html><html><head><title>Cetak Kartu Ujian (8 Kartu Per Lembar)</title>');
             newWindow.document.write('<style>body{margin:0;padding:0;background:#f3f4f6;}@media print{body{background:none;}@page{size:215mm 330mm;margin:0;}}</style></head><body>');
             newWindow.document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
             newWindow.document.write('<div id="printContent">' + pagesHTML + '</div>');
-            newWindow.document.write('<script>const students = ' + JSON.stringify(filteredData) + ';window.onload=function(){students.forEach(s=>{const el=document.getElementById("qrcode-"+s.id);if(el){new QRCode(el,{text:"SDN22TK\\nPESERTA:"+s.nama+"\\nNO:"+s.no,width:55,height:55,correctLevel:QRCode.CorrectLevel.H});}});setTimeout(()=>{window.print();},1200);};<\/script></body></html>');
+            newWindow.document.write('<script>const students = ' + JSON.stringify(filteredData) + ';window.onload=function(){students.forEach(s=>{const el=document.getElementById("qrcode-"+s.id);if(el){new QRCode(el,{text:"SDN22TK\\nPESERTA:"+s.nama+"\\nNO:"+s.no,width:50,height:50,correctLevel:QRCode.CorrectLevel.H});}});setTimeout(()=>{window.print();},1500);};<\/script></body></html>');
             newWindow.document.close();
         }
 
@@ -704,7 +703,4 @@
         });
     </script>
 </body>
-
 </html>
-
-
